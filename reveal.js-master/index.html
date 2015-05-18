@@ -15,7 +15,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 
 		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/sky.css" id="theme">
+		<link rel="stylesheet" href="css/theme/simple.css" id="theme">
 
 		<!-- Code syntax highlighting -->
 		<link rel="stylesheet" href="lib/css/zenburn.css">
@@ -62,7 +62,7 @@
 					<h2 style="text-transform: capitalize;">Alternative Denominators in Transport Crime</h2>
 					<h3 style="text-transform: capitalize;">Reka Solymosi, Matt Ashby, Tom Cohen and Aiden Sidebottom</h3>
 					<p>
-						<small> <a href="https://www.ucl.ac.uk/transport-institute/research-and-publications/safety-and-security/crime-safety-group">UCL Crime, Satefy, and Transport Group</a></small>
+						<small> <a href="https://www.ucl.ac.uk/transport-institute/research-and-publications/safety-and-security/crime-safety-group">UCL Crime, Safety and Transport Group</a></small>
 					</p>
 				</section>
 
@@ -149,33 +149,57 @@
 				</section>
 				<section data-background="images/denom_residential.png" class="mapSlide">
 					<h4>Night-time (residential) population</h4>
-					<ol>
-						<li>Heathrow Terminals 1,2,3 <span class="change changeUp">⬆︎161</span></li>
-						<li>Stratford <span class="change changeDown">⬇︎︎1</span></li>
+					<ol class="fragment">
+						<li>Heathrow Terminals 1,2,3 <span class="change changeUp">⬆︎161 places</span></li>
+						<li>Stratford</li>
 						<li>North Greenwich <span class="change changeUp">⬆︎22</span></li>
 						<li>Moor Park <span class="change changeUp">⬆︎157</span></li>
-						<li>Epping <span class="change changeUp">⬆︎64</span></li> <!-- ⬌ -->
+						<li>Epping <span class="change changeUp">⬆︎64</span></li>
 					</ol>
 				</section>
 				<section data-background="images/denom_daytime.png" class="mapSlide">
 					<h4>Daytime (working) population</h4>
-					<ol>
-						<li>Stratford <span class="change changeUp">⬆︎1</span></li>
-						<li>North Greenwich <span class="change changeUp">⬆︎︎1</span></li>
-						<li>North Greenwich <span class="change changeUp">⬆︎2</span></li>
+					<ol class="fragment">
+						<li>Stratford</li>
+						<li>North Greenwich</li>
+						<li>Epping</li>
 						<li>Canning Town <span class="change changeUp">⬆︎16</span></li>
 						<li>Seven Sisters <span class="change changeUp">⬆19</span></li>
 					</ol>
 				</section>
-				<section>
-					<h4 align="left"><font color="#8c510a">Transport crime denominators - timetable</font></h4>
-					<p align="left"> blah blah blah
-					</p>
+				<section data-background="images/denom_trains.png" class="mapSlide">
+					<h4>Trains calling at station</h4>
+					<ol class="fragment">
+						<li>Stratford</li>
+						<li>Willesden Junction <span class="change changeUp">⬆︎︎19</span></li>
+						<li>Chesham <span class="change changeUp">⬆︎︎14</span></li>
+						<li>Victoria <span class="change changeUp">⬆︎︎66</span></li>
+						<li>Canning Town</li>
+					</ol>
+				</section>
+				<section data-background="images/denom_entryexit.png" class="mapSlide">
+					<h4>Passengers touching in/out</h4>
+					<ol class="fragment">
+						<li>Roding Valley <span class="changeUp">⬆81</span></li>
+						<li>Chesham</li>
+						<li>Chigwell <span class="change changeUp">⬆︎︎25</span></li>
+						<li>Acton Town <span class="change changeUp">⬆︎︎38</span></li>
+						<li>Sudbury Hill <span class="change changeUp">⬆︎︎12</span></li>
+					</ol>
+				</section>
+				<section data-background="images/denom_passengers.png" class="mapSlide">
+					<h4>Passengers entering/exiting/interchanging/passing through</h4>
+					<ol class="fragment">
+						<li>Chesham</li>
+						<li>Epping</li>
+						<li>Watford <span class="change changeUp">⬆︎︎14</span></li>
+						<li>High Barnet <span class="change changeUp">⬆︎︎17</span></li>
+						<li>West Ruislip <span class="change changeUp">⬆︎︎29</span></li>
+					</ol>
 				</section>
 				<section>
-					<h4 align="left"><font color="#8c510a">Transport crime denominators - passenger surveys</font></h4>
-					<p align="left"> blah blah blah
-					</p>
+					<h4>Different denominators = different analytical conclusions</h4>
+					<img src="images/parcoord.png" style="border-style: none">
 				</section>
 				<section>
 					<h4 align="left"><font color="#5ab4ac">Lessons Learned</font></h4>
@@ -522,7 +546,7 @@ Reveal.addEventListener( 'customevent', function() {
 				controls: true,
 				progress: true,
 				history: true,
-				center: false,
+				center: true,
 
 				transition: 'fade', // none/fade/slide/convex/concave/zoom
 
