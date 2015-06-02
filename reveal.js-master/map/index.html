@@ -62,9 +62,10 @@
 <script>
 
 // initiate map
+var mapHome = new L.LatLng(51.55,-0.165);
 var map = L.map('map', {
-    center: new L.LatLng(51.55,-0.165),
-    zoom: 10
+    center: mapHome,
+    zoom: 9
 });
 
 // add tiles to map
@@ -95,6 +96,7 @@ lineColors = {
 var rankingBox = L.control({position: 'bottomright'});
 rankingBox.onAdd = function(map) {
 	var div = L.DomUtil.create('div','info legend');
+	div.innerHTML += '<p id="resetMap" style="float: right; margin-top: 0; margin-left: 0.5em; font-size: 0.75em;">centre map</p>';
 	div.innerHTML += '<h5>Top stations</h5>';
 	var contents = '<ol>';
 	for (i = 1; i <= 5; i++) {
@@ -210,6 +212,10 @@ $("#chooseType").change(function () {
 	});
 	points.clearLayers();
 	addData(geojsonPoints,show);
+});
+
+$('#resetMap').click(function () {
+	map.setView(mapHome,9);
 });
 
 </script>

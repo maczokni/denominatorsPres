@@ -15,11 +15,13 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 
 		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/simple.css" id="theme">
+		<link rel="stylesheet" href="css/theme/ucl.css" id="theme">
 		<link rel="stylesheet" href="css/leaflet.css">
 
 		<script src="js/leaflet.js"></script>
 		<script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
+		<script src="js/jquery-2.1.4.min.js"></script>
+		<script src="js/d3.min.js"></script>
 
 		<!-- Code syntax highlighting -->
 		<link rel="stylesheet" href="lib/css/zenburn.css">
@@ -38,21 +40,6 @@
 		<![endif]-->
 		
 		<style>
-			h1 {
-				padding-bottom: 0.5em !IMPORTANT;
-				border-bottom: 1px solid #333 !IMPORTANT;
-				font-size: 2.5em !IMPORTANT;
-				text-transform: capitalize !IMPORTANT;
-			}
-			h2 {
-				padding-bottom: 0.5em !IMPORTANT;
-				border-bottom: 1px solid #333 !IMPORTANT;
-				font-size: 1.5em !IMPORTANT;
-			}
-			h3 {
-				padding-top: 1em !IMPORTANT;
-				border-bottom: 1px solid #333 !IMPORTANT;
-			}
 			.solo {
 				padding-bottom: 0 !IMPORTANT;
 				border-bottom: 0px !IMPORTANT;
@@ -62,17 +49,13 @@
 				border-bottom: 0px !IMPORTANT;
 				color: #FFF !IMPORTANT;
 				background-color: transparent !IMPORTANT;
-			}
-			h2.authors {
-				font-size: 1.5em !IMPORTANT;
-			}
-			h4 {
-				padding-bottom: 0.5em !IMPORTANT;
-				border-bottom: 1px solid #333 !IMPORTANT;
+				font-weight: 700 !IMPORTANT;
 			}
 			.mapSlide {
-				padding: 1em;
-				background-color: rgba(255,255,255,0.9);
+				background-color: rgba(255,255,255,0.8);
+			}
+			.mapSlidePad {
+				margin: 1em !IMPORTANT;
 			}
 			.change {
 				font-size: 0.8em;
@@ -90,6 +73,33 @@
 			.credits {
 				font-size: 0.5em !IMPORTANT;
 			}
+
+/* CSS for parallel co-ordinate plots */
+.line {
+	fill: none;
+	stroke: #ddd;
+	shape-rendering: crispEdges;
+}
+.noshow {
+	display: none;
+}
+
+g.axis path.domain {
+	stroke: #333;
+	stroke-width: 1px;
+	fill: none;
+	shape-rendering: crispEdges;
+}
+g.axis g.tick line {
+	display: none;
+}
+text.axistext,
+text.axistitle {
+	font-size: 0.5em;
+}
+text.axistitle {
+	font-style: italic;
+}
 		</style>
 		
 	</head>
@@ -100,10 +110,12 @@
 
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
-				<section>
-					<h1>Alternative Denominators in Transport Crime</h1>
-					<h2 class="authors">Reka Solymosi, Matt Ashby, Tom Cohen and Aiden Sidebottom</h2>
-					<p><small><a href="https://www.ucl.ac.uk/transport-institute/research-and-publications/safety-and-security/crime-safety-group">UCL Crime, Safety and Transport Group</a></small></p>
+				<section data-background="images/train-blur.jpg" class="mapSlide">
+					<div class="mapSlidePad">
+						<h1>Alternative denominators in transport crime</h1>
+						<p class="authors">Reka Solymosi, Matt Ashby, Tom Cohen and Aiden Sidebottom</p>
+						<p><small><a href="https://www.ucl.ac.uk/transport-institute/research-and-publications/safety-and-security/crime-safety-group">UCL Crime, Safety and Transport Group</a></small></p>
+					</div>
 				</section>
 <!--
 				<section>
@@ -133,10 +145,10 @@
 					<h3>Crime rates</h3>
 					<p>indicators of reported crime activity standardized by population.</p>
 				</section>
-				<section data-background="images/gower_street.png">
-					<h2 class="wob">Gower Street</h2>
+				<section data-background="images/empty.jpg">
+					<h2 class="wob">Embankment</h2>
 				</section>
-				<section data-background="images/oxford_street.png">
+				<section data-background="images/busy.jpg">
 					<h2 class="wob">Oxford Street</h2>
 				</section>
 				<section>
@@ -147,7 +159,153 @@
 					<p><strong>Numerator</strong> will determine best denominator.</p>
 -->
 				</section>
-				<section data-background="images/borough_violence.png" data-background-size="800px">
+				<section>
+<div id="chart1" style="height: 500px;"></div>
+<script>
+
+var margin1 = {top: 60, right: 20, bottom: 100, left: 30},
+	width1 = 800 - margin1.left - margin1.right,
+	height1 = 600 - margin1.top - margin1.bottom;
+
+var initialtext1 = 'violent crimes per 1,000 people, 2014';
+
+var x1 = d3.scale.ordinal().rangePoints([0, width1], 1),
+    y1 = {};
+
+var line1 = d3.svg.line(),
+    axis1 = d3.svg.axis().orient("left");
+
+var svg1 = d3.select("#chart1").append("svg")
+	.attr("width", width1 + margin1.left + margin1.right)
+	.attr("height", height1 + margin1.top + margin1.bottom)
+	.append("g")
+		.attr("transform", "translate(" + margin1.left + "," + margin1.top + ")");
+
+// function to bring element to front on mouseover
+d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+};
+
+// function to return ordinal number as string
+function ordinal(i) {
+    var j = i % 10,
+        k = i % 100;
+    if (j == 1 && k != 11) {
+        return i + "st";
+    }
+    if (j == 2 && k != 12) {
+        return i + "nd";
+    }
+    if (j == 3 && k != 13) {
+        return i + "rd";
+    }
+    return i + "th";
+}
+
+d3.csv("data/chart1.csv", function(error, data) {
+
+	// Extract the list of dimensions and create a scale for each.
+	x1.domain(dimensions1 = d3.keys(data[0]).filter(function(d) {
+		return d != "name" && (y1[d] = d3.scale.linear()
+			.domain(d3.extent(data, function(p) { return +p[d]; }))
+			.range([height1, 0]));
+	}));
+	
+	// extract data for ranking
+	var nrankdata = [];
+	var drankdata = [];
+	for (i = 0; i < data.length; i++) {
+		if (data[i]['name'] != 'max' && data[i]['name'] != 'min') {
+			nrankdata.push({'name': data[i]['name'], 'val': parseFloat(data[i]['residential pop.'])});
+			drankdata.push({'name': data[i]['name'], 'val': parseFloat(data[i]['daytime pop.'])});
+		}
+	}
+
+	// sort ranking data
+	nrankdata.sort(function (a,b) {
+		if (a.val < b.val) { return 1; }
+		if (a.val > b.val) { return -1; }
+		return 0;
+	});	
+	drankdata.sort(function (a,b) {
+		if (a.val < b.val) { return 1; }
+		if (a.val > b.val) { return -1; }
+		return 0;
+	});	
+
+	// extract borough names from ranking data
+	var nranks = [];
+	var dranks = [];
+	for (i = 0; i < nrankdata.length; i++) {
+		nranks.push(nrankdata[i]['name']);
+	}
+	for (i = 0; i < drankdata.length; i++) {
+		dranks.push(drankdata[i]['name']);
+	}
+	$('body').append(JSON.stringify(dranks));
+		
+	svg1.append("g")
+		.attr("class", "lines")
+		.selectAll("path")
+		.data(data)
+		.enter().append("path")
+		.attr('class', function (d) {
+			if (d['name'] == 'max' || d['name'] == 'min') {
+				return 'noshow';
+			} else {
+				return 'line';
+			}
+		})
+		.attr('id', function (d) {
+			return d['name'].replace(/\W/g, '').toLowerCase();
+		})
+		.attr("d", path1)
+		.on('mouseover',function (d) {
+			d3.select(this).moveToFront();
+			d3.select(this).style('stroke','#000').style('stroke-width','2px');
+			d3.select('#borough').text( function () {
+				return d['name'] + ' (' + ordinal(nranks.indexOf(d['name'])+1) + ' \u2192 ' + ordinal(dranks.indexOf(d['name'])+1) + ')';
+			});
+		})
+		.on('mouseout',function (d) {
+			d3.select(this).style('stroke','#ddd').style('stroke-width','1px');
+			d3.select('#borough').text(initialtext1);
+		});
+
+	// Add a group element for each dimension.
+	var g1 = svg1.selectAll(".dimension1")
+		.data(dimensions1)
+		.enter().append("g")
+		.attr("class", "dimension1")
+		.attr("transform", function(d) { return "translate(" + x1(d) + ")"; });
+
+	// Add an axis and title.
+	g1.append("g")
+		.attr("class", "axis")
+		.each(function(d) { d3.select(this).call(axis1.scale(y1[d]).tickFormat('')); })
+		.append("text")
+		.attr('transform','translate(-9, ' + (height1 + 9) + ') rotate(45)')
+		.attr('class','axistext')
+		.text(function(d) { return d; });
+
+	// add left-axis text
+	svg1.append('text').attr('x',0).attr('y',0).attr('transform','translate(' + margin1.left + ',' + height1/2 + ') rotate(-90)').attr('text-anchor','middle').attr('class','axistitle').text('crime rate');
+	svg1.append('text').attr('x',margin1.left).attr('y',6).attr('text-anchor','end').attr('class','axistext').text('high');
+	svg1.append('text').attr('x',margin1.left).attr('y',height1+6).attr('text-anchor','end').attr('class','axistext').text('low');
+
+	// add placeholder for station name
+	svg1.append('text').attr('x',width1/2).attr('y',-30).attr('id','borough').attr('text-anchor','middle').text(initialtext1);
+
+});
+
+// Returns the path for a given data point.
+function path1(d) {
+	return line1(dimensions1.map(function(p) { return [x1(p), y1[p](d[p])]; }));
+}
+
+</script>
 				</section>
 				<section>
 					<h2>Alternative denominators</h2>
@@ -207,93 +365,94 @@
 				</section>
 
 				<section>
-					<h2 class="solo">At which London Underground stations do <em>you</em> feel least safe?</h2>
-				</section>
-				<section data-background="images/denom_count.png">
-				</section>
-				<section data-background="images/denom_count_cas.png">
-				</section>
-				<section data-background="images/denom_count.png" class="mapSlide">
-					<h2>Count of violent crimes, 2014</h2>
-					<ol>
-						<li>Stratford</li>
-						<li>Victoria</li>
-						<li>King's Cross St Pancras</li>
-						<li>Oxford Circus</li>
-						<li>Bank/Monument</li>
-					</ol>
-				</section>
-				<section data-background="images/denom_count_cas.png">
-				</section>
-				<section data-background="images/denom_residential.png">
-				</section>
-				<section data-background="images/denom_residential.png" class="mapSlide">
-					<h2>Night-time (residential) population</h2>
-					<ol>
-						<li>Heathrow Terminals 1,2,3 <span class="change changeUp">&#8679;︎161 places</span></li>
-						<li>Stratford</li>
-						<li>North Greenwich <span class="change changeUp">&#8679;︎22</span></li>
-						<li>Moor Park <span class="change changeUp">&#8679;︎157</span></li>
-						<li>Epping <span class="change changeUp">&#8679;︎64</span></li>
-					</ol>
-				</section>
-				<section data-background="images/denom_residential.png">
-				</section>
-				<section data-background="images/denom_daytime.png">
-				</section>
-				<section data-background="images/denom_daytime.png" class="mapSlide">
-					<h2>Daytime (working) population</h2>
-					<ol>
-						<li>Stratford</li>
-						<li>North Greenwich</li>
-						<li>Epping</li>
-						<li>Canning Town <span class="change changeUp">&#8679;︎16</span></li>
-						<li>Seven Sisters <span class="change changeUp">&#8679;19</span></li>
-					</ol>
-				</section>
-				<section data-background="images/denom_daytime.png">
-				</section>
-				<section data-background="images/denom_trains.png">
-				</section>
-				<section data-background="images/denom_trains.png" class="mapSlide">
-					<h2>Trains calling at station</h2>
-					<ol>
-						<li>Stratford</li>
-						<li>Willesden Junction <span class="change changeUp">&#8679;︎︎19</span></li>
-						<li>Chesham <span class="change changeUp">&#8679;︎︎14</span></li>
-						<li>Victoria <span class="change changeUp">&#8679;︎︎66</span></li>
-						<li>Canning Town</li>
-					</ol>
-				</section>
-				<section data-background="images/denom_trains.png">
-				</section>
-				<section data-background="images/denom_entryexit.png">
-				</section>
-				<section data-background="images/denom_entryexit.png" class="mapSlide">
-					<h2>Passengers touching in/out</h2>
-					<ol>
-						<li>Roding Valley <span class="changeUp">&#8679;81</span></li>
-						<li>Chesham</li>
-						<li>Chigwell <span class="change changeUp">&#8679;25</span></li>
-						<li>Acton Town <span class="change changeUp">&#8679;︎︎38</span></li>
-						<li>Sudbury Hill <span class="change changeUp">&#8679;︎︎12</span></li>
-					</ol>
-				</section>
-				<section data-background="images/denom_entryexit.png">
-				</section>
-				<section data-background="images/denom_passengers.png">
-				</section>
-				<section data-background="images/denom_passengers.png" class="mapSlide">
-					<h2>All passengers</h2>
-					<ol>
-						<li>Chesham</li>
-						<li>Epping</li>
-						<li>Watford <span class="change changeUp">&#8679;︎︎14</span></li>
-						<li>High Barnet <span class="change changeUp">&#8679;︎︎17</span></li>
-						<li>West Ruislip <span class="change changeUp">&#8679;︎︎29</span></li>
-					</ol>
-				</section>
-				<section data-background="images/parcoord2.png" data-background-size="800px">
+<div id="chart2" style="height: 500px;"></div>
+<script>
+
+var margin2 = {top: 60, right: 20, bottom: 100, left: 30},
+	width2 = 800 - margin2.left - margin2.right,
+	height2 = 500 - margin2.top - margin2.bottom;
+	
+var initialtext2 = 'violent crime on London Underground, 2014';
+
+var x2 = d3.scale.ordinal().rangePoints([0, width2], 1),
+    y2 = {};
+
+var line2 = d3.svg.line(),
+    axis2 = d3.svg.axis().orient("left");
+
+var svg2 = d3.select("#chart2").append("svg")
+	.attr("width", width2 + margin2.left + margin2.right)
+	.attr("height", height2 + margin2.top + margin2.bottom)
+	.append("g")
+		.attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+d3.csv("data/chart2.csv", function(error, data) {
+
+	// Extract the list of dimensions and create a scale for each.
+	x2.domain(dimensions2 = d3.keys(data[0]).filter(function(d) {
+		return d != "name" && (y2[d] = d3.scale.linear()
+			.domain(d3.extent(data, function(p) { return +p[d]; }))
+			.range([height2, 0]));
+	}));
+	
+	lines = svg2.append("g")
+		.attr("class", "lines")
+		.selectAll("path")
+		.data(data)
+		.enter().append("path")
+		.attr('class','line')
+		.attr('id', function (d) {
+			return d['name'].replace(/\W/g, '').toLowerCase();
+		})
+		.attr("d", path2)
+		.on('mouseover',function (d) {
+			d3.select(this).moveToFront();
+			d3.select(this).style('stroke','#000').style('stroke-width','2px');
+			d3.select('#staname').text( function () {
+				if (1 == d['count']) {
+					return d['name'] + ' (' + d['count'] + ' crime)';
+				} else {
+					return d['name'] + ' (' + d['count'] + ' crimes)';
+				}
+			});
+		})
+		.on('mouseout',function (d) {
+			d3.select(this).style('stroke','#ddd').style('stroke-width','1px');
+			d3.select('#staname').text(initialtext2);
+		});
+
+	// Add a group element for each dimension.
+	var g = svg2.selectAll(".dimension2")
+		.data(dimensions2)
+		.enter().append("g")
+		.attr("class", "dimension2")
+		.attr("transform", function(d) { return "translate(" + x2(d) + ")"; });
+
+	// Add an axis and title.
+	g.append("g")
+		.attr("class", "axis")
+		.each(function(d) { d3.select(this).call(axis2.scale(y2[d]).tickFormat('')); })
+		.append("text")
+		.attr('transform','translate(-9, ' + (height2 + 9) + ') rotate(45)')
+		.attr('class','axistext')
+		.text(function(d) { return d; });
+
+	// add left-axis text
+	svg2.append('text').attr('x',0).attr('y',0).attr('transform','translate(' + margin2.left + ',' + height2/2 + ') rotate(-90)').attr('text-anchor','middle').attr('class','axistitle').text('crime rate');
+	svg2.append('text').attr('x',margin2.left).attr('y',6).attr('text-anchor','end').attr('class','axistext').text('high');
+	svg2.append('text').attr('x',margin2.left).attr('y',height2+6).attr('text-anchor','end').attr('class','axistext').text('low');
+
+	// add placeholder for station name
+	svg2.append('text').attr('x',width2/2).attr('y',-30).attr('id','staname').attr('text-anchor','middle').text(initialtext2);
+
+// Returns the path for a given data point.
+function path2(d) {
+	return line2(dimensions2.map(function(p) { return [x2(p), y2[p](d[p])]; }));
+}
+
+});
+
+</script>
 				</section>
 				<section>
 					<h2 class="solo">Different denominators<br>=<br><strong>different analytical conclusions</strong></h2>
@@ -312,16 +471,22 @@
 					<li>Focus further on demographics to identify <strong>relative risks</strong> instead of risk based on general population. </li>
 					<li>Incorporate method for systematic inclusion of context through <strong>environmental backcloth</strong>  where relevant as well.</li>
 				</section>
-				<section>
-					<p>r.solymosi.11@ucl.ac.uk&#8194;|&#8194;@wkndinthecity</p>
-					<p>matthew.ashby.09@ucl.ac.uk&#8194;|&#8194;@lesscrime&#8194;|&#8194;lesscrime.info</p>
-					<p>These slides at:<br><a href="http://lesscrime.info/presentations/tsug-denominators/" title="permalink to these slides">http://lesscrime.info/presentations/tsug-denominators/</a></p>
-					<div class="credits">
+				<section data-background="images/train-blur.jpg" class="mapSlide">
+					<div class="mapSlidePad credits">
 						<h3>Data sources</h3>
 						<p>Office for National Statistics, 2011 Census: Aggregate data (England and Wales) [computer file]. UK Data Service Census Support. Downloaded from: <a href="http://infuse.mimas.ac.uk" title="InFuse service homepage">http://infuse.mimas.ac.uk</a>.</p>
 						<p>Ordnance Survey data are &copy; Crown Copyright and/or database right 2015; all rights reserved.</p>
 						<p>Crime data contain public sector information licensed under the UK Open Government Licence v1.0.</p>
 						<p>Powered by TfL Open Data.</p>
+						<h3>Image credits</h3>
+						<p><a href="https://www.flickr.com/photos/bigbadwolfmedia/5215651696/" title="Flickr image page for busy-street image">Craig Bush</a>, <a href="https://www.flickr.com/photos/pixelpyro/5793758828/" title="Flickr image page for blurred-train image">Christopher Smith</a> and <a href="https://www.flickr.com/photos/mogello/5676834239/" title="Flickr image page for empty-street image">Michael Caroe Andersen</a> via <a href="https://www.flickr.com/" title="Flickr homepage">Flickr</a>.</p>
+					</div>
+				</section>
+				<section data-background="images/train-blur.jpg" class="mapSlide">
+					<div class="mapSlidePad">
+						<p>r.solymosi.11@ucl.ac.uk&#8194;|&#8194;@wkndinthecity</p>
+						<p>matthew.ashby.09@ucl.ac.uk&#8194;|&#8194;@lesscrime</p>
+						<p style="margin-top: 2em;">These slides at:<br><a href="http://lesscrime.info/presentations/stockholm2015/" title="permalink to these slides">http://lesscrime.info/presentations/stockholm2015/</a></p>
 					</div>
 				</section>
 
