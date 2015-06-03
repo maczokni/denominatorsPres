@@ -138,13 +138,13 @@ text.axistitle {
 						<li class="reka">Future directions</li></font>
 					</ul>	
 				</section>
--->
 				<section>
 					<h3>Crime counts</h3> 
 					<p>indicators of the frequency of known criminal activity.</p>
 					<h3>Crime rates</h3>
 					<p>indicators of reported crime activity standardized by population.</p>
 				</section>
+-->
 				<section data-background="images/empty.jpg">
 					<h2 class="wob">Embankment</h2>
 				</section>
@@ -244,7 +244,6 @@ d3.csv("data/chart1.csv", function(error, data) {
 	for (i = 0; i < drankdata.length; i++) {
 		dranks.push(drankdata[i]['name']);
 	}
-	$('body').append(JSON.stringify(dranks));
 		
 	svg1.append("g")
 		.attr("class", "lines")
@@ -326,8 +325,8 @@ function path1(d) {
 						<li>Large, rapid changes in population</li>
 						<li>Embedded in but different from surrounding environment</li>
 					</ul>
-					<p><strong>local crime rates may not be appropriate for transport crime</strong></p>
 <!--
+					<p><strong>local crime rates may not be appropriate for transport crime</strong></p>
 					<p>Transit systems can act as <strong>crime generators</strong> and <strong>crime attractors</strong>, making transport a unique environment for crime (Smith & Clarke 2000).</p>
 					<p>Calculating risk requires measures of exposure to risk such as</p>
 					<ul>
@@ -455,8 +454,10 @@ function path2(d) {
 </script>
 				</section>
 				<section>
-					<h2 class="solo">Different denominators<br>=<br><strong>different analytical conclusions</strong></h2>
+					<h2 class="solo" style="text-align: center;">Different denominators<br>=<br><strong>different conclusions</strong></h2>
 				</section>
+
+<!--
 				<section>
 					<h2>Lessons Learned</h2>
 					<ul>
@@ -465,6 +466,8 @@ function path2(d) {
 					<li>Denominators exist along an <strong>availability-validity spectrum</strong> </li>
 					</ul>
 				</section>
+-->
+
 				<section>
 					<h2>Next steps</h2>
 					<ul>
