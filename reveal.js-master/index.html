@@ -12,8 +12,6 @@
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
-
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/ucl.css" id="theme">
 		<link rel="stylesheet" href="css/leaflet.css">
@@ -94,13 +92,30 @@ g.axis g.tick line {
 	display: none;
 }
 text.axistext,
-text.axistitle {
+text.axistitle,
+.chartnote text,
+.tick text {
 	font-size: 0.5em;
+}
+.timecats text,
+.agecat text {
+	font-size: 0.75em;
 }
 text.axistitle {
 	font-style: italic;
 }
+.linecat {
+	fill: none;
+	stroke-width: 1px;
+	stroke: #000;
+}
 		</style>
+
+<script>
+
+var color = d3.scale.category20();
+
+</script>
 		
 	</head>
 
@@ -113,7 +128,7 @@ text.axistitle {
 				<section data-background="images/train-blur.jpg" class="mapSlide">
 					<div class="mapSlidePad">
 						<h1>Alternative denominators in transport crime</h1>
-						<p class="authors">Reka Solymosi, Matt Ashby, Tom Cohen and Aiden Sidebottom</p>
+						<p class="authors">Reká Solymosi, Matt Ashby, Tom Cohen and Aiden Sidebottom</p>
 						<p><small><a href="https://www.ucl.ac.uk/transport-institute/research-and-publications/safety-and-security/crime-safety-group">UCL Crime, Safety and Transport Group</a></small></p>
 					</div>
 				</section>
@@ -263,7 +278,7 @@ d3.csv("data/chart1.csv", function(error, data) {
 		.attr("d", path1)
 		.on('mouseover',function (d) {
 			d3.select(this).moveToFront();
-			d3.select(this).style('stroke','#000').style('stroke-width','2px');
+			d3.select(this).style('stroke',color(0)).style('stroke-width','3px');
 			d3.select('#borough').text( function () {
 				return d['name'] + ' (' + ordinal(nranks.indexOf(d['name'])+1) + ' \u2192 ' + ordinal(dranks.indexOf(d['name'])+1) + ')';
 			});
@@ -344,9 +359,256 @@ function path1(d) {
 				</section>
 -->
 				<section>
-					
-<!--					<h2 class="solo"><strong>Availability</strong> & <strong>validity</strong></h2>
--->					<img src="images/availNvalid.png">
+<div id="chart4" style="height: 500px;"></div>
+<script>
+
+var nothing = function () {
+
+var margin = {top: 20, right: 20+200, bottom: 100, left: 100+150},
+    width = 850 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom")
+    .ticks(0);
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .ticks(0);
+
+var data = [
+	{x: 0.58, y: 9.80},
+	{x: 2.53, y: 9.41},
+	{x: 2.27, y: 7.59},
+	{x: 5.09, y: 7.67},
+	{x: 5.02, y: 6.45},
+	{x: 6.07, y: 4.82},
+	{x: 8.01, y: 3.90},
+	{x: 7.45, y: 2.95},
+	{x: 9.93, y: 1.97},
+	{x: 9.97, y: 0.95}
+	];
+
+var dotr = 10;
+
+var svg = d3.select("#chart4").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+	.append("g")
+    	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+x.domain(d3.extent(data, function(d) { return d.x; })).nice();
+y.domain(d3.extent(data, function(d) { return d.y; })).nice();
+
+svg.append("g")
+	.attr("class", "x axis")
+	.attr("transform", "translate(0," + height + ")")
+	.call(xAxis)
+	.append("text")
+		.attr("class", "axistitle")
+		.attr("x", width)
+		.attr("y", 45)
+		.style("text-anchor", "end")
+		.text("validity");
+
+svg.append("g")
+	.attr("class", "y axis")
+	.call(yAxis)
+	.append("text")
+		.attr("class", "axistitle")
+		.attr("x", -30)
+		.attr("y", 6)
+		.attr("dy", ".71em")
+		.style("text-anchor", "end")
+		.text("availability")
+
+var note1 = svg.append('g')
+	.attr('id','note1')
+	.attr('class','chartnote');
+note1.append('rect')
+	.attr('x',x(10*.95))
+	.attr('y',y(10*.95))
+	.attr('height',50)
+	.attr('width',50)
+	.attr('transform','translate(-25,-25)')
+	.style('fill-opacity',0)
+	.on('mouseover',function () {
+		d3.select('#note1t').transition().duration(500).style('opacity',1);
+	});
+var note1t = note1.append('g')
+	.attr('id','note1t')
+	.style('opacity',0);
+note1t.append('line')
+	.attr('x1',x(10*.95)+(dotr+5))
+	.attr('y1',y(10*.95))
+	.attr('x2',width+20)
+	.attr('y2',y(10*.95))
+	.style('stroke','#000');
+note1t.selectAll('text')
+	.data(['ideal','denominator'])
+	.enter()
+	.append('text')
+		.attr('x',width+20)
+		.attr('y',y(10*.95))
+		.attr('dx','0.4em')
+		.attr('dy',function (d,i) {
+			return (0.4 + i) + 'em';
+		})
+		.style('text-anchor','start')
+		.text(function (d) {
+			return d;
+		});
+
+var note2 = svg.append('g')
+	.attr('id','note2')
+	.attr('class','chartnote');
+note2.append('rect')
+	.attr('x',x(data[2]['x']*.9))
+	.attr('y',y(data[2]['y']*.9))
+	.attr('height',50)
+	.attr('width',50)
+	.attr('transform','translate(-25,-25)')
+	.style('fill-opacity',0)
+	.on('mouseover',function () {
+		d3.select('#note2t').transition().duration(500).style('opacity',1);
+	});
+var note2t = note2.append('g')
+	.attr('id','note2t')
+	.style('opacity',0);
+note2t.append('line')
+	.attr('x1',x(data[2]['x']*.9)-(dotr+5))
+	.attr('y1',y(data[2]['y']*.9))
+	.attr('x2',-20)
+	.attr('y2',y(data[2]['y']*.9))
+	.style('stroke','#000');
+note2t.selectAll('text')
+	.data(['data are easy to get','but poorly represent','opportunities'])
+	.enter()
+	.append('text')
+		.attr('x',-20)
+		.attr('y',y(data[2]['y']*.9))
+		.attr('dx','-0.4em')
+		.attr('dy',function (d,i) {
+			return (0.4 + i) + 'em';
+		})
+		.style('text-anchor','end')
+		.text(function (d) {
+			return d;
+		});
+
+var note3 = svg.append('g')
+	.attr('id','note3')
+	.attr('class','chartnote');
+note3.append('rect')
+	.attr('x',x(data[8]['x']*.9))
+	.attr('y',y(data[8]['y']*.9))
+	.attr('height',50)
+	.attr('width',50)
+	.attr('transform','translate(-25,-25)')
+	.style('fill-opacity',0)
+	.on('mouseover',function () {
+		d3.select('#note3t').transition().duration(500).style('opacity',1);
+	});
+var note3t = note3.append('g')
+	.attr('id','note3t')
+	.style('opacity',0);
+note3t.append('line')
+	.attr('x1',x(data[8]['x']*.9)+(dotr+5))
+	.attr('y1',y(data[8]['y']*.9))
+	.attr('x2',width+20)
+	.attr('y2',y(data[8]['y']*.9))
+	.style('stroke','#000');
+note3t.selectAll('text')
+	.data(['data would represent','opportunities, but data','difficult to get'])
+	.enter()
+	.append('text')
+		.attr('x',width+20)
+		.attr('y',y(data[8]['y']*.9))
+		.attr('dx','0.4em')
+		.attr('dy',function (d,i) {
+			return (0.4 + i) + 'em';
+		})
+		.style('text-anchor','start')
+		.text(function (d) {
+			return d;
+		});
+
+var note4 = svg.append('g')
+	.attr('id','note4')
+	.attr('class','chartnote');
+note4.append('rect')
+	.attr('x',x(10*.05))
+	.attr('y',y(10*.05))
+	.attr('height',50)
+	.attr('width',50)
+	.attr('transform','translate(-25,-25)')
+	.style('fill-opacity',0)
+	.on('mouseover',function () {
+		d3.select('#note4t').transition().duration(500).style('opacity',1);
+	});
+var note4t = note4.append('g')
+	.attr('id','note4t')
+	.style('opacity',0);
+note4t.append('line')
+	.attr('x1',x(10*.05)-(dotr+5))
+	.attr('y1',y(10*.05))
+	.attr('x2',-20)
+	.attr('y2',y(10*.05))
+	.style('stroke','#000');
+note4t.selectAll('text')
+	.data(['terrible','denominator'])
+	.enter()
+	.append('text')
+		.attr('x',-20)
+		.attr('y',y(10*.05))
+		.attr('dx','-0.4em')
+		.attr('dy',function (d,i) {
+			return (0.4 + i) + 'em';
+		})
+		.style('text-anchor','end')
+		.text(function (d) {
+			return d;
+		});
+
+svg.selectAll(".dot")
+	.data(data)
+	.enter()
+	.append("circle")
+		.attr("class", "dot")
+		.attr("r", dotr)
+		.attr("cx", function(d) { return x(d.x*.9); })
+		.attr("cy", function(d) { return y(d.y*.9); })
+		.style('fill',color(0));
+
+svg.append('circle')
+	.attr('class','dot')
+	.attr('r',dotr)
+	.attr('cx',x(10*.95))
+	.attr('cy',y(10*.95))
+	.style('fill',color(1));
+
+svg.append('circle')
+	.attr('class','dot')
+	.attr('r',dotr)
+	.attr('cx',x(10*.05))
+	.attr('cy',y(10*.05))
+	.style('fill',color(2));
+
+}()
+
+</script>					
+<!--
+					<h2 class="solo"><strong>Availability</strong> & <strong>validity</strong></h2>
+					<img src="images/availNvalid.png">
+-->
 				</section>
 <!--
 				<section>
@@ -360,7 +622,7 @@ function path1(d) {
 -->
 
 				<section>
-					<iframe src="map/index.html" style="height: 2000px; width: 3000px; border: 1px solid #000;"></iframe>
+					<iframe src="map/index.html" style="height: 600px; width: 900px; border: 1px solid #000; max-height: 95%; max-width: 95%;"></iframe>
 					<p style="margin-top: 0; text-align: right; font-size: 0.5em;"><a href="map/" title="transport-crime denominators map">full-page map</a></p>
 				</section>
 
@@ -407,7 +669,7 @@ d3.csv("data/chart2.csv", function(error, data) {
 		.attr("d", path2)
 		.on('mouseover',function (d) {
 			d3.select(this).moveToFront();
-			d3.select(this).style('stroke','#000').style('stroke-width','2px');
+			d3.select(this).style('stroke',color(0)).style('stroke-width','3px');
 			d3.select('#staname').text( function () {
 				if (1 == d['count']) {
 					return d['name'] + ' (' + d['count'] + ' crime)';
@@ -470,9 +732,153 @@ function path2(d) {
 -->
 
 				<section>
+					<div id="chart3" style="height: 500px;"></div>
+
+<script>
+
+var nothing = function() {
+
+var margin = {top: 50, right: 160, bottom: 50, left: 100},
+    width = 1000 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var formatPercent = d3.format(".0%");
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+// var color = d3.scale.category20();
+// var color = d3.scale.ordinal()
+//			.domain(['under 20','20-24','25-34','35-44','45-59','over 59'])
+//			.range(['#B36305','#9B0056','#0098D4','#E32017','#003688','#95CDBA'])
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .tickFormat(formatPercent);
+
+var area = d3.svg.area()
+	.interpolate("step-after")
+    .x(function(d) { return x(d.time); })
+    .y0(function(d) { return y(d.y0); })
+    .y1(function(d) { return y(d.y0 + d.y); });
+
+// var line = d3.svg.line()
+//     .interpolate("step-after")
+//     .x(function(d) { return x(d.time); })
+//     .y(function(d) { return y(d.value); });
+
+var stack = d3.layout.stack()
+    .values(function(d) { return d.values; });
+
+var svg = d3.select("#chart3").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("data/chart3.csv", function(error, data) {
+
+  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "time"; }));
+
+  var categories = stack(color.domain().map(function(name) {
+    return {
+      name: name,
+      values: data.map(function(d) {
+        return {time: d.time, y: parseFloat(d[name])};
+      })
+    };
+  }));
+
+// 	var linecats = color.domain().map(function(name) {
+// 		return {
+// 			name: name,
+// 			values: data.map(function(d) {
+// 				return {time: d.time, value: +d[name]/100};
+// 			})
+// 		};
+// 	});
+
+//  x.domain(d3.extent(data, function(d) { return d.name; }));
+	x.domain([4,24]);
+
+  var category = svg.selectAll(".agecat")
+      .data(categories)
+    .enter().append("g")
+      .attr("class", "agecat");
+
+  category.append("path")
+      .attr("class", "area")
+      .attr("d", function(d) { return area(d.values); })
+      .style("fill", function(d) { return color(d.name); })
+      .style('fill-opacity',0.75);
+
+  category.append("text")
+      .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
+      .attr("transform", function(d) { return "translate(" + x(d.value.time) + "," + y(d.value.y0 + d.value.y / 2) + ")"; })
+      .attr("x", 10)
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name; });
+
+// 	var lines = svg.selectAll('.linecat')
+// 		.data(linecats)
+// 		.enter()
+// 		.append('path')
+// 		.attr('class','linecat')
+// 		.attr('d',function (d) {return line(d.values); });
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+
+	// add x-axis text
+	svg.append('text').attr('x',width).attr('y',height+45).attr('text-anchor','end').attr('class','axistitle').text('hour of day');
+
+	// add y-axis text
+	svg.append('text').attr('x',0).attr('y',-9-10).attr('text-anchor','end').attr('class','axistitle').text('passengers');
+
+  timecats = svg.append('g')
+  	  .attr('class','timecats');
+  timecats.append('text')
+  	.attr('x',x(8.5))
+  	.attr('y',-9-22)
+  	.attr('text-anchor','middle')
+  	.text('morning');
+  timecats.append('text')
+  	.attr('x',x(8.5))
+  	.attr('y',-9)
+  	.attr('text-anchor','middle')
+  	.text('peak');
+  timecats.append('text')
+  	.attr('x',x(17.5))
+  	.attr('y',-9-22)
+  	.attr('text-anchor','middle')
+  	.text('evening');
+  timecats.append('text')
+  	.attr('x',x(17.5))
+  	.attr('y',-9)
+  	.attr('text-anchor','middle')
+  	.text('peak');
+});
+
+}()
+
+</script>
+<!--					<ul>
 					<h2>Next steps</h2>
 					<img src="images/all_age_stack.png">
-<!--					<ul>
 					<li>Focus further on demographics to identify <strong>relative risks</strong> instead of risk based on general population. </li>
 					<li>Incorporate method for systematic inclusion of context through <strong>
 					environmental backcloth</strong>  where relevant as well.</li>
